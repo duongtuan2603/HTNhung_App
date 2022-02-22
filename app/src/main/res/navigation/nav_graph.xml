@@ -11,8 +11,11 @@
         android:label="MainFragment"
         tools:layout="@layout/fragment_main">
         <action
-            android:id="@+id/action_mainFragment_to_placeholder"
-            app:destination="@id/placeholder" />
+            android:id="@+id/action_mainFragment_to_carParksFragment"
+            app:destination="@id/carParksFragment" />
     </fragment>
-    <fragment android:id="@+id/placeholder" />
+    <fragment
+        android:id="@+id/carParksFragment"
+        android:name="com.example.htnhung_app.view.fragments.CarParksFragment"
+        android:label="CarParksFragment" />
 </navigation>
