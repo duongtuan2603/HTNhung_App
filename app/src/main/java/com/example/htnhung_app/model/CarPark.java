@@ -15,11 +15,65 @@ public class CarPark implements Serializable {
     private double distance;
     private String distanceKilometer;
     private String durationMinute;
+    private DistanceClassified distanceClassified;
+    private DurationClassified durationClassified;
+    private SpacesClassified spacesClassified;
+    private int totalClassified;
 
-    public enum DistanceClassified {
-        NEAR,MIDDLE,FAR
+    public DistanceClassified getDistanceClassified() {
+        if (distance < 2000)
+            return DistanceClassified.NEAR;
+        return DistanceClassified.FAR;
     }
 
+    public DurationClassified getDurationClassified() {
+        if (duration < 15 * 60) {
+            return DurationClassified.SHORT;
+        }
+        return DurationClassified.LONG;
+    }
+
+    public SpacesClassified getSpacesClassified() {
+        if (emptySpace < 10)
+            return SpacesClassified.FEW;
+        return SpacesClassified.MANY;
+    }
+
+    public int getTotalClassified() {
+        if (getDistanceClassified() == DistanceClassified.NEAR) {
+            if (getDurationClassified() == DurationClassified.SHORT) {
+                if (getSpacesClassified() == SpacesClassified.MANY)
+                    return 1;
+                return 2;
+            } else {
+                if (getSpacesClassified() == SpacesClassified.MANY)
+                    return 3;
+                return 4;
+            }
+        } else {
+            if (getDurationClassified() == DurationClassified.SHORT) {
+                if (getSpacesClassified() == SpacesClassified.MANY)
+                    return 5;
+                return 6;
+            } else {
+                if (getSpacesClassified() == SpacesClassified.MANY)
+                    return 7;
+                return 8;
+            }
+        }
+    }
+
+    public enum DistanceClassified {
+        NEAR, FAR
+    }
+
+    public enum DurationClassified {
+        SHORT, LONG
+    }
+
+    public enum SpacesClassified {
+        FEW, MANY
+    }
 
 
     public CarPark(String id, Double lat, double lon, String name, int emptySpace) {
@@ -87,16 +141,16 @@ public class CarPark implements Serializable {
     }
 
     public String getDistanceKilometer() {
-        return distance/1000+" km";
+        return distance / 1000 + " km";
     }
 
     public String getDurationMinute() {
-        return duration/60 + " min";
+        return duration / 60 + " min";
     }
 
     @NonNull
     @Override
     public String toString() {
-        return name + "-" + lat + "-" + lon + "\n";
+        return name + "-" + distanceKilometer + "-" + durationMinute + "\n";
     }
 }

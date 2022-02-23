@@ -20,7 +20,7 @@
             android:id="@+id/rcv_car_parks"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="100dp"
+            android:layout_marginBottom="20dp"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent" />
 
@@ -36,7 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="20dp"
-            android:layout_marginBottom="80dp"
+            android:layout_marginBottom="130dp"
             android:backgroundTint="@color/black"
             android:src="@drawable/ic_direction"
             app:fabSize="auto"

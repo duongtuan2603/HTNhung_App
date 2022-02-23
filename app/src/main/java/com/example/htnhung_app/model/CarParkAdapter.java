@@ -1,8 +1,10 @@
 package com.example.htnhung_app.model;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,6 +17,7 @@ import java.util.List;
 public class CarParkAdapter extends RecyclerView.Adapter<CarParkAdapter.CarParkViewHolder> {
     private List<CarPark> carParks = new ArrayList<>();
     private ICarPark iCarPark;
+    Context context;
 
     public CarParkAdapter(ICarPark iCarPark) {
         this.iCarPark = iCarPark;
@@ -28,6 +31,7 @@ public class CarParkAdapter extends RecyclerView.Adapter<CarParkAdapter.CarParkV
     @NonNull
     @Override
     public CarParkViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        context = parent.getContext();
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         ItemCarParkBinding binding = ItemCarParkBinding.inflate(layoutInflater, parent, false);
         return new CarParkViewHolder(binding);
@@ -40,9 +44,11 @@ public class CarParkAdapter extends RecyclerView.Adapter<CarParkAdapter.CarParkV
         holder.binding.getRoot().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Toast.makeText(context, "RATE: "+carPark.getTotalClassified(), Toast.LENGTH_SHORT).show();
                 iCarPark.onClickItem(carPark.getLat(), carPark.getLon());
             }
         });
+
     }
 
     @Override

@@ -20,4 +20,16 @@ public class ShareViewModel extends ViewModel {
             return new MutableLiveData<>();
         } else return selectedLocation;
     }
+
+    private MutableLiveData<LatLng> userLocation = new MutableLiveData<>();
+
+    public void setUserLocation(LatLng location) {
+        userLocation.setValue(location);
+    }
+
+    public LiveData<LatLng> getUserLocation() {
+        if (userLocation == null) {
+            return new MutableLiveData<>();
+        } else return userLocation;
+    }
 }

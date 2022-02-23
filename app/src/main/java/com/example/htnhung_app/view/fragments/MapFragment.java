@@ -39,7 +39,9 @@ import com.example.htnhung_app.R;
 import com.example.htnhung_app.databinding.FragmentMapBinding;
 import com.example.htnhung_app.model.CarPark;
 import com.example.htnhung_app.model.CarParkAdapter;
+import com.example.htnhung_app.model.DistanceResponse;
 import com.example.htnhung_app.model.DistanceService;
+import com.example.htnhung_app.model.LocationResponse;
 import com.example.htnhung_app.model.ShareViewModel;
 import com.example.htnhung_app.view.BaseFragment;
 import com.example.htnhung_app.viewmodel.MapViewModel;
@@ -72,6 +74,15 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
     Location currentLocation;
     LatLng selectedLocation;
 
+    private DistanceService distanceService;
+    private DistanceService locationService;
+
+    String queryString = "";
+
+
+    private List<CarPark> carParks = new ArrayList<>();
+    private CarParkAdapter adapter;
+
     @Override
     protected int getLayoutRes() {
         return R.layout.fragment_map;
@@ -82,6 +93,19 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
     protected void initData() {
         viewModel = ViewModelProviders.of(this).get(MapViewModel.class);
         shareViewModel = new ViewModelProvider(requireActivity()).get(ShareViewModel.class);
+        distanceService = new DistanceService("https://trueway-matrix.p.rapidapi.com/");
+        locationService = new DistanceService("http://192.168.2.103:4000/");
+
+
+        carParks.add(new CarPark("TH1", 21.009746, 105.823494, "Thái Hà", 100));
+        carParks.add(new CarPark("TC2", 20.998585, 105.840124, "Trường Chinh", 5));
+        adapter = new CarParkAdapter(new CarParkAdapter.ICarPark() {
+            @Override
+            public void onClickItem(double lat, double lon) {
+                shareViewModel.setSelectedLocation(new LatLng(lat, lon));
+
+            }
+        });
 
 
         SupportMapFragment mapFragment = SupportMapFragment.newInstance();
@@ -94,6 +118,7 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
         mLocationManager = (LocationManager) requireContext().getSystemService(Context.LOCATION_SERVICE);
         if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             currentLocation = mLocationManager.getLastKnownLocation(LocationManager.FUSED_PROVIDER);
+            shareViewModel.setUserLocation(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
         } else {
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
         }
@@ -101,6 +126,9 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
 
     @Override
     protected void initView() {
+        viewBinding.fabDirection.setVisibility(View.GONE);
+        viewBinding.rcvCarParks.setAdapter(adapter);
+        viewBinding.rcvCarParks.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         viewModel.setButtonMoreState(false);
         viewBinding.fabMore.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,7 +139,7 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
         viewBinding.fabList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                navigate(R.id.action_mainFragment_to_carParksFragment);
+                navigate(R.id.action_mapFragment_to_carParksFragment);
             }
         });
         viewBinding.fabDirection.setOnClickListener(new View.OnClickListener() {
@@ -120,7 +148,7 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
                 Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
 
                         Uri.parse("http://maps.google.com/maps?saddr=" +
-                                        currentLocation.getLatitude() + "," + currentLocation.getLongitude()+
+                                currentLocation.getLatitude() + "," + currentLocation.getLongitude() +
                                 "&daddr=" + selectedLocation.latitude + "," + selectedLocation.longitude));
                 startActivity(intent);
             }
@@ -156,6 +184,8 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
             @Override
             public void onChanged(LatLng latLng) {
                 if (latLng != null) {
+                    viewBinding.rcvCarParks.setVisibility(View.GONE);
+                    viewBinding.fabDirection.setVisibility(View.VISIBLE);
                     selectedLocation = latLng;
                     new Handler().postDelayed(new Runnable() {
                         @Override
@@ -167,6 +197,9 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
                         }
                     }, 1000);
 
+                } else {
+                    viewBinding.rcvCarParks.setVisibility(View.VISIBLE);
+                    viewBinding.fabDirection.setVisibility(View.GONE);
                 }
             }
         });
@@ -177,16 +210,76 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
         this.map = googleMap;
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style));
         currentLocation = mLocationManager.getLastKnownLocation(LocationManager.FUSED_PROVIDER);
+        shareViewModel.setUserLocation(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
         map.setMyLocationEnabled(true);
         map.setMinZoomPreference(15);
         map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
 
+
+        LatLng location = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+        locationService.loicationAPI.getLocations().enqueue(new Callback<LocationResponse>() {
+            @Override
+            public void onResponse(Call<LocationResponse> call, Response<LocationResponse> response) {
+                if (response.isSuccessful()) {
+                    if (response.body() != null) {
+                        carParks = response.body().getData();
+                        for (int i = 0; i < carParks.size(); i++) {
+                            CarPark carPark = carParks.get(i);
+                            if (i != carParks.size() - 1) {
+                                queryString = queryString.concat(carPark.getLat() + "," + carPark.getLon() + ";");
+                            } else {
+                                queryString = queryString.concat(carPark.getLat() + "," + carPark.getLon());
+                            }
+                        }
+                        callAPIDistance(queryString, location);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<LocationResponse> call, Throwable t) {
+                Log.d("onResponse", "response: " + t.getMessage());
+
+            }
+        });
+    }
+
+    private void callAPIDistance(String queryString, LatLng location) {
+        distanceService.distanceAPI.getDistances("trueway-matrix.p.rapidapi.com", "d9394aba86msh5d9752ebcfcb740p10782ajsnad6dfcd9b9c6", queryString, location.latitude + "," + location.longitude).enqueue(new Callback<DistanceResponse>() {
+            @Override
+            public void onResponse(Call<DistanceResponse> call, Response<DistanceResponse> response) {
+                if (response.isSuccessful()) {
+                    for (int i = 0; i < carParks.size(); i++) {
+                        CarPark carPark = carParks.get(i);
+                        assert response.body() != null;
+                        Log.d("onResponse", "response: " + response.body().getDistances().toString());
+                        if (response.body().getDistances().size() > 0 && response.body().getDurations().size() > 0) {
+                            List<Double> dumpDistances = (List<Double>) response.body().getDistances().get(i);
+                            List<Double> dumpDurations = (List<Double>) response.body().getDurations().get(i);
+                            carPark.setDistance(dumpDistances.get(0));
+                            carPark.setDuration(
+
+                                    dumpDurations.get(0));
+                            carParks.set(i, carPark);
+                        }
+                        Log.d("onResponse", "carparks: " + carParks.toString());
+                        adapter.setCarParks(carParks);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DistanceResponse> call, Throwable t) {
+                Log.d("onCallFailure", "onResponse: " + t.getMessage());
+            }
+        });
     }
 
     private ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
-                    currentLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    currentLocation = mLocationManager.getLastKnownLocation(LocationManager.FUSED_PROVIDER);
+                    shareViewModel.setUserLocation(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
                 } else {
                 }
             });
