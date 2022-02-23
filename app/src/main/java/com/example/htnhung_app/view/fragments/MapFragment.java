@@ -94,7 +94,7 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
         viewModel = ViewModelProviders.of(this).get(MapViewModel.class);
         shareViewModel = new ViewModelProvider(requireActivity()).get(ShareViewModel.class);
         distanceService = new DistanceService("https://trueway-matrix.p.rapidapi.com/");
-        locationService = new DistanceService("http://192.168.2.103:4000/");
+        locationService = new DistanceService("http://192.168.2.103:6060/");
 
 
         carParks.add(new CarPark("TH1", 21.009746, 105.823494, "Thái Hà", 100));
@@ -117,7 +117,7 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
 
         mLocationManager = (LocationManager) requireContext().getSystemService(Context.LOCATION_SERVICE);
         if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            currentLocation = mLocationManager.getLastKnownLocation(LocationManager.FUSED_PROVIDER);
+            currentLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             shareViewModel.setUserLocation(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
         } else {
             requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
@@ -209,7 +209,7 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
     public void onMapReady(@NonNull GoogleMap googleMap) {
         this.map = googleMap;
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style));
-        currentLocation = mLocationManager.getLastKnownLocation(LocationManager.FUSED_PROVIDER);
+        currentLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         shareViewModel.setUserLocation(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
         map.setMyLocationEnabled(true);
         map.setMinZoomPreference(15);
@@ -222,6 +222,7 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
             public void onResponse(Call<LocationResponse> call, Response<LocationResponse> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
+
                         carParks = response.body().getData();
                         for (int i = 0; i < carParks.size(); i++) {
                             CarPark carPark = carParks.get(i);
@@ -230,6 +231,7 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
                             } else {
                                 queryString = queryString.concat(carPark.getLat() + "," + carPark.getLon());
                             }
+
                         }
                         callAPIDistance(queryString, location);
                     }
@@ -278,7 +280,7 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
     private ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
-                    currentLocation = mLocationManager.getLastKnownLocation(LocationManager.FUSED_PROVIDER);
+                    currentLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     shareViewModel.setUserLocation(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
                 } else {
                 }

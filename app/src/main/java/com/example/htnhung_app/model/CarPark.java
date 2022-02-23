@@ -21,7 +21,7 @@ public class CarPark implements Serializable {
     private int totalClassified;
 
     public DistanceClassified getDistanceClassified() {
-        if (distance < 2000)
+        if (distance < 5000)
             return DistanceClassified.NEAR;
         return DistanceClassified.FAR;
     }
@@ -34,7 +34,7 @@ public class CarPark implements Serializable {
     }
 
     public SpacesClassified getSpacesClassified() {
-        if (emptySpace < 10)
+        if (emptySpace < 50)
             return SpacesClassified.FEW;
         return SpacesClassified.MANY;
     }

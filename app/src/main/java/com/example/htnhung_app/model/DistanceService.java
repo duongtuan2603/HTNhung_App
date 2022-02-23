@@ -17,7 +17,7 @@ public class DistanceService {
         Call<DistanceResponse> getDistances(@Header("X-RapidAPI-Host") String host, @Header("x-rapidapi-key") String key, @Query("origins") String origins, @Query("destinations") String destinations);
     }
     public interface LocationAPI {
-        @GET("api/infolocation")
+        @GET("api/getpark")
         Call<LocationResponse> getLocations();
     }
 

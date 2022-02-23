@@ -3,13 +3,13 @@ package com.example.htnhung_app.model;
 import java.util.List;
 
 public class LocationResponse {
-    private List<CarPark> data;
+    private List<CarPark> result;
 
     public List<CarPark> getData() {
-        return data;
+        return result   ;
     }
 
     public void setData(List<CarPark> data) {
-        this.data = data;
+        this.result = data;
     }
 }
