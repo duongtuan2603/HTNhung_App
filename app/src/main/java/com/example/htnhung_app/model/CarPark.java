@@ -19,6 +19,7 @@ public class CarPark implements Serializable {
     private DurationClassified durationClassified;
     private SpacesClassified spacesClassified;
     private int totalClassified;
+    private String isAvailable;
 
     public DistanceClassified getDistanceClassified() {
         if (distance < 5000)
@@ -141,16 +142,20 @@ public class CarPark implements Serializable {
     }
 
     public String getDistanceKilometer() {
-        return distance / 1000 + " km";
+        return (Math.round(distance/1000*100.0)/100.0+ " km");
     }
 
     public String getDurationMinute() {
-        return duration / 60 + " min";
+        return (int) duration/60 + " min";
     }
 
     @NonNull
     @Override
     public String toString() {
         return name + "-" + distanceKilometer + "-" + durationMinute + "\n";
+    }
+
+    public String getIsAvailable() {
+        return (emptySpace>0?"Còn chỗ":"Hết chỗ");
     }
 }

@@ -231,7 +231,6 @@ public class MapFragment extends BaseFragment<FragmentMapBinding> implements OnM
                             } else {
                                 queryString = queryString.concat(carPark.getLat() + "," + carPark.getLon());
                             }
-
                         }
                         callAPIDistance(queryString, location);
                     }

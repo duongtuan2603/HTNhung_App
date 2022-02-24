@@ -1,6 +1,7 @@
 package com.example.htnhung_app.model;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,11 +42,14 @@ public class CarParkAdapter extends RecyclerView.Adapter<CarParkAdapter.CarParkV
     public void onBindViewHolder(@NonNull CarParkViewHolder holder, int position) {
         CarPark carPark = carParks.get(position);
         holder.binding.setCarPark(carPark);
+        holder.binding.txtAvailable.setTextColor(carPark.getIsAvailable().equals("Còn chỗ") ? Color.parseColor("#1F9FFC") : Color.parseColor("#FF0000"));
         holder.binding.getRoot().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(context, "RATE: "+carPark.getTotalClassified(), Toast.LENGTH_SHORT).show();
-                iCarPark.onClickItem(carPark.getLat(), carPark.getLon());
+                if (carPark.getEmptySpace() > 0) {
+                    Toast.makeText(context, "RATE: " + carPark.getTotalClassified(), Toast.LENGTH_SHORT).show();
+                    iCarPark.onClickItem(carPark.getLat(), carPark.getLon());
+                }
             }
         });
 
